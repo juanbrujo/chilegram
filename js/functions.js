@@ -3,13 +3,13 @@
 $(function(){
 	
 	//loading all sound files when document is ready
-	var hover = new buzz.sound( "PATH-TO/audio/hover", {
+	var hover = new buzz.sound( "PATH-TO/hover", {
         formats: ["mp3"]
     });
-	var abre = new buzz.sound( "PATH-TO/audio/abre", {
+	var abre = new buzz.sound( "PATH-TO/abre", {
         formats: ["mp3"]
     });
-	var ok = new buzz.sound( "PATH-TO/audio/ok", {
+	var ok = new buzz.sound( "PATH-TO/ok", {
         formats: ["mp3"]
     });
     jQuery('#instafeed a img').live('mouseenter', function(){
@@ -18,6 +18,12 @@ $(function(){
 	jQuery('#main').mouseenter(function(){
         abre.play();
     });
+
+	jQuery.fn.shuffleElements = function () {
+	    var o = $(this);
+	    for (var j, x, i = o.length; i; j = parseInt(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+	    return o;
+	};
 	
 	function revolver(){
 		var play = 0;
@@ -33,16 +39,25 @@ $(function(){
 		});
 	}
 	
+	$ubicacionActual = window.location.hash;
+	$ubicacionActualLimpia = $ubicacionActual.replace('#','');
+	if($ubicacionActual) {
+		$('#main select').val($ubicacionActualLimpia).attr('selected','selected').trigger('change');
+	} else {
+		$ubicacionActualLimpia = 'chile';
+	}
+	
 	var feed = new Instafeed({
 	    get: 'tagged',
-	    tagName: 'chile',
-	    clientId: 'YOUR-INSTAGRAM-ID',
+	    tagName: $ubicacionActualLimpia,
+	    clientId: 'YOUR-INSTAGRAM-APP-ID',
 		limit: 50,
 		before: function(){
 			$('aside').addClass('loading');
 			$('h1').removeClass('on');
 		},
 		success: function(){
+			window.location.hash='#'+$ubicacionActualLimpia;
 			$('#instafeed').removeClass('play').empty();
 		},
 		complete: function(){
@@ -51,7 +66,7 @@ $(function(){
 				$(this).attr('target','_blank').append('<span class="lsf">link</span>')
 			});
 			revolver();
-			$('h1').text('#chile').addClass('on');
+			$('h1').text('#'+$ubicacionActualLimpia).addClass('on');
 			$('aside').removeClass('loading');
 			$('#main').addClass('escondido');
 		}
@@ -61,19 +76,19 @@ $(function(){
 	
 	$('#main select').change(function(){
 		$ciudad = $(this).val();
-		$ciudadLimpia = $(this).val().replace(/ /g,'').replace(/[ÀÁÂÃÄÅÆàáâãäåæ]/gi,'a').replace(/[ÈÉÊËèéêë]/gi,'e').replace(/[ÌÍÎÏìíîï]/gi,'i').replace(/[ÒÓÔÕÖòóôõö]/gi,'o').replace(/[ÙÚÛÜùúûü]/gi,'u').replace(/[Ññ]/gi,'n').toLowerCase();
 		clearInterval(intGram);
 		
 		var feed = new Instafeed({
 		    get: 'tagged',
-		    tagName: $ciudadLimpia,
-		    clientId: 'YOUR-INSTAGRAM-ID',
+		    tagName: $ciudad,
+		    clientId: 'YOUR-INSTAGRAM-APP-ID',
 			limit: 50,
 			before: function(){
 				$('aside').addClass('loading');
 				$('h1').removeClass('on');
 			},
 			success: function(){
+				window.location.hash='#'+$ciudad;
 				$('#instafeed').removeClass('play').empty();
 				ok.play();
 			},
@@ -83,7 +98,7 @@ $(function(){
 					$(this).attr('target','_blank').append('<span class="lsf">link</span>')
 				});
 				revolver();
-				$('h1').text('#'+$ciudadLimpia).addClass('on');
+				$('h1').text('#'+$ciudad).addClass('on');
 				$('aside').removeClass('loading');
 				$('#main').addClass('escondido');
 			}
@@ -94,9 +109,3 @@ $(function(){
 	});
 	
 });
-
-jQuery.fn.shuffleElements = function () {
-    var o = $(this);
-    for (var j, x, i = o.length; i; j = parseInt(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
-    return o;
-};
